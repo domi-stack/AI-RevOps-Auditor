@@ -1,54 +1,34 @@
 import streamlit as st
 import pandas as pd
 
-from src.analytics.funnel import funnel_conversion
-from src.analytics.unit_economics import unit_economics
+from analytics.funnel import funnel_conversion
+from analytics.unit_economics import unit_economics
 
 st.set_page_config(page_title="AI RevOps Auditor", layout="wide")
 
 st.title("📊 AI RevOps Auditor")
 
-# =========================
-# UPLOAD CSV
-# =========================
-uploaded_file = st.file_uploader("Upload funnel CSV", type=["csv"])
+uploaded_file = st.file_uploader("Upload CSV", type=["csv"])
 
 if uploaded_file:
     df = pd.read_csv(uploaded_file)
 
-    st.subheader("Raw Data")
+    st.subheader("Data")
     st.dataframe(df)
 
-    # =========================
-    # FUNNEL
-    # =========================
     st.subheader("Funnel Analysis")
+    try:
+        st.json(funnel_conversion(df))
+    except Exception as e:
+        st.error(f"Funnel error: {e}")
 
-    funnel = funnel_conversion(df)
-    st.json(funnel)
-
-    # =========================
-    # UNIT ECONOMICS (mock inputs)
-    # =========================
     st.subheader("Unit Economics")
+    try:
+        st.json(unit_economics(
+            10000, 50, 1200, 12, 100
+        ))
+    except Exception as e:
+        st.error(f"Economics error: {e}")
 
-    economics = unit_economics(
-        marketing_cost=10000,
-        new_customers=50,
-        avg_revenue=1200,
-        lifetime_months=12,
-        monthly_revenue=100
-    )
-
-    st.json(economics)
-
-    # =========================
-    # EXECUTIVE INSIGHTS
-    # =========================
-    st.subheader("Executive Insights")
-
-    st.write("⚠️ Funnel leakage detected between stages (demo logic)")
-    st.write("💰 CAC vs LTV ratio indicates growth efficiency")
-    st.write("📉 Payback period suggests scaling opportunity")
 else:
     st.info("Upload a CSV to start analysis")
